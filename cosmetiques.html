@@ -1,0 +1,654 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Cosmétiques Boussahoua</title>
+  <style>
+    :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+    body { margin: 0; background:#f6f7fb; color:#111; }
+    header { background:#fff; padding:14px 16px; position:sticky; top:0; border-bottom:1px solid #e7e7ee; }
+    h1 { margin:0; font-size:18px; }
+    .wrap { padding: 16px; max-width: 820px; margin: 0 auto; }
+    .card { background:#fff; border:1px solid #e7e7ee; border-radius:14px; padding:14px; box-shadow: 0 2px 10px rgba(0,0,0,.03); margin-bottom:12px; }
+    .row { display:flex; gap:10px; flex-wrap:wrap; }
+    .row > * { flex:1; min-width: 120px; }
+    label { display:block; font-size:12px; opacity:.75; margin: 8px 0 6px; }
+    input, select, button, textarea {
+      width:100%; box-sizing:border-box;
+      padding:10px 12px; border-radius:12px;
+      border:1px solid #d9d9e6; background:#fff;
+      font-size:14px;
+    }
+    button { cursor:pointer; border:none; background:#111; color:#fff; font-weight:600; }
+    button.secondary { background:#fff; color:#111; border:1px solid #d9d9e6; }
+    button.danger { background:#c62828; }
+    .tabs { display:flex; gap:8px; flex-wrap:wrap; }
+    .tab { padding:10px 12px; border-radius:999px; border:1px solid #d9d9e6; background:#fff; cursor:pointer; font-weight:600; }
+    .tab.active { background:#111; color:#fff; border-color:#111; }
+    .muted { opacity:.75; }
+    .list { display:flex; flex-direction:column; gap:10px; }
+    .item { border:1px solid #e7e7ee; border-radius:14px; padding:12px; background:#fff; }
+    .item h3 { margin:0 0 6px; font-size:15px; }
+    .item .meta { font-size:13px; opacity:.85; display:flex; gap:10px; flex-wrap:wrap; }
+    .item .actions { display:flex; gap:8px; margin-top:10px; }
+    .item .actions button { width:auto; padding:9px 12px; border-radius:12px; }
+    .pill { display:inline-block; padding:4px 10px; border-radius:999px; background:#f1f2f7; font-size:12px; }
+    .grid2 { display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+    @media (max-width: 600px){ .grid2 { grid-template-columns: 1fr; } }
+    .hr { height:1px; background:#e7e7ee; margin:12px 0; }
+    .toast { position:fixed; bottom:16px; left:16px; right:16px; background:#111; color:#fff; padding:12px 14px; border-radius:14px; display:none; }
+    .small { font-size:12px; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>Cosmétiques Boussahoua</h1>
+</header>
+
+<div class="wrap">
+
+  <!-- LOGIN -->
+  <div id="loginView" class="card">
+    <h2 style="margin:0 0 8px;font-size:16px;">تسجيل الدخول</h2>
+    <p class="muted small" style="margin-top:0">هذه نسخة ويب محلية على هاتفك. الدخول يكون بـ PIN (رمز) بسيط.</p>
+
+    <div class="row">
+      <div>
+        <label>PIN (رمز الدخول)</label>
+        <input id="pinInput" inputmode="numeric" placeholder="مثال: 1234" />
+      </div>
+      <div style="min-width:160px">
+        <label>&nbsp;</label>
+        <button onclick="login()">دخول</button>
+      </div>
+    </div>
+
+    <div class="hr"></div>
+
+    <h3 style="margin:0 0 6px;font-size:14px;">أول مرة؟ عيّن PIN جديد</h3>
+    <div class="row">
+      <div>
+        <label>PIN جديد</label>
+        <input id="newPin" inputmode="numeric" placeholder="مثال: 1234" />
+      </div>
+      <div style="min-width:160px">
+        <label>&nbsp;</label>
+        <button class="secondary" onclick="setPin()">حفظ PIN</button>
+      </div>
+    </div>
+    <p class="muted small" style="margin-bottom:0">⚠️ إذا نسيت PIN، تقدر تمسح بيانات المتصفح (راح تروح الداتا). زِد استعمل Export للنسخ الاحتياطي.</p>
+  </div>
+
+  <!-- APP -->
+  <div id="appView" style="display:none">
+    <div class="card">
+      <div class="row" style="align-items:center">
+        <div style="min-width:200px">
+          <div class="tabs">
+            <div class="tab active" id="tabProducts" onclick="showTab('products')">المنتجات</div>
+            <div class="tab" id="tabSell" onclick="showTab('sell')">البيع</div>
+            <div class="tab" id="tabProfit" onclick="showTab('profit')">ربح اليوم</div>
+            <div class="tab" id="tabBackup" onclick="showTab('backup')">نسخ احتياطي</div>
+          </div>
+        </div>
+        <div style="flex:1"></div>
+        <div style="min-width:120px">
+          <button class="secondary" onclick="logout()">خروج</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRODUCTS -->
+    <div id="productsPane">
+      <div class="card">
+        <h2 style="margin:0 0 10px;font-size:16px;">إضافة منتج</h2>
+        <div class="grid2">
+          <div>
+            <label>اسم المنتج</label>
+            <input id="pName" placeholder="مثال: كريم وجه" />
+          </div>
+          <div>
+            <label>الكمية (Stock)</label>
+            <input id="pStock" inputmode="numeric" placeholder="مثال: 10" />
+          </div>
+          <div>
+            <label>سعر الشراء</label>
+            <input id="pBuy" inputmode="decimal" placeholder="مثال: 500" />
+          </div>
+          <div>
+            <label>سعر البيع الافتراضي</label>
+            <input id="pSell" inputmode="decimal" placeholder="مثال: 800" />
+          </div>
+        </div>
+        <div style="margin-top:10px" class="row">
+          <button onclick="addProduct()">حفظ المنتج</button>
+          <button class="secondary" onclick="clearProductForm()">مسح</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="row">
+          <div>
+            <label>بحث</label>
+            <input id="search" placeholder="ابحث بالاسم..." oninput="renderProducts()" />
+          </div>
+          <div style="min-width:160px">
+            <label>ترتيب</label>
+            <select id="sortBy" onchange="renderProducts()">
+              <option value="new">الأحدث</option>
+              <option value="name">الاسم</option>
+              <option value="stock">الكمية</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+        <div id="productsList" class="list"></div>
+      </div>
+    </div>
+
+    <!-- SELL -->
+    <div id="sellPane" style="display:none">
+      <div class="card">
+        <h2 style="margin:0 0 10px;font-size:16px;">عملية بيع</h2>
+        <div class="grid2">
+          <div>
+            <label>اختر المنتج</label>
+            <select id="sellProduct" onchange="prefillSell()"></select>
+          </div>
+          <div>
+            <label>الكمية</label>
+            <input id="sellQty" inputmode="numeric" value="1" />
+          </div>
+          <div>
+            <label>سعر البيع (يمكن تغييره)</label>
+            <input id="sellPrice" inputmode="decimal" placeholder="سعر البيع" />
+          </div>
+          <div>
+            <label>ملاحظة (اختياري)</label>
+            <input id="sellNote" placeholder="..." />
+          </div>
+        </div>
+        <div style="margin-top:10px" class="row">
+          <button onclick="confirmSale()">تأكيد البيع</button>
+          <button class="secondary" onclick="resetSell()">مسح</button>
+        </div>
+        <p class="muted small" style="margin-bottom:0">الستوك ينقص تلقائياً، والربح يتحسب حسب (سعر البيع - سعر الشراء) × الكمية.</p>
+      </div>
+
+      <div class="card">
+        <h3 style="margin:0 0 10px;font-size:14px;">آخر المبيعات</h3>
+        <div id="salesList" class="list"></div>
+      </div>
+    </div>
+
+    <!-- PROFIT -->
+    <div id="profitPane" style="display:none">
+      <div class="card">
+        <h2 style="margin:0 0 10px;font-size:16px;">ربح اليوم</h2>
+        <div class="grid2">
+          <div class="card" style="margin:0">
+            <div class="muted small">إجمالي المبيعات اليوم</div>
+            <div id="todaySales" style="font-size:20px;font-weight:800;margin-top:6px">0</div>
+          </div>
+          <div class="card" style="margin:0">
+            <div class="muted small">إجمالي الربح اليوم</div>
+            <div id="todayProfit" style="font-size:20px;font-weight:800;margin-top:6px">0</div>
+          </div>
+        </div>
+        <div class="hr"></div>
+        <div class="row">
+          <div class="pill">عدد العمليات: <span id="todayCount">0</span></div>
+          <div class="pill">تاريخ اليوم: <span id="todayDate"></span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin:0 0 10px;font-size:14px;">تفاصيل مبيعات اليوم</h3>
+        <div id="todayList" class="list"></div>
+      </div>
+    </div>
+
+    <!-- BACKUP -->
+    <div id="backupPane" style="display:none">
+      <div class="card">
+        <h2 style="margin:0 0 10px;font-size:16px;">نسخ احتياطي (Export / Import)</h2>
+        <p class="muted small" style="margin-top:0">مهم باش ما تضيعش الداتا. تقدر تنسخ JSON وتحطّو في WhatsApp لنفسك ولا في ملاحظة.</p>
+
+        <div class="row">
+          <button onclick="exportData()">Export (إخراج)</button>
+          <button class="secondary" onclick="copyExport()">نسخ النص</button>
+          <button class="danger" onclick="resetAll()">حذف كل البيانات</button>
+        </div>
+
+        <label style="margin-top:12px;">البيانات (JSON)</label>
+        <textarea id="backupText" rows="10" placeholder="هنا يخرج/يدخل JSON..."></textarea>
+
+        <div class="row" style="margin-top:10px">
+          <button onclick="importData()">Import (استيراد)</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+  const LS_KEY = "cb_data_v1";
+  const PIN_KEY = "cb_pin_v1";
+  const SESSION_KEY = "cb_logged_v1";
+
+  function toast(msg){
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.style.display = "block";
+    setTimeout(()=> t.style.display="none", 2500);
+  }
+
+  function loadData(){
+    const raw = localStorage.getItem(LS_KEY);
+    if(!raw) return { products: [], sales: [] };
+    try { return JSON.parse(raw); } catch { return { products: [], sales: [] }; }
+  }
+  function saveData(data){
+    localStorage.setItem(LS_KEY, JSON.stringify(data));
+  }
+
+  function isLogged(){
+    return localStorage.getItem(SESSION_KEY) === "1";
+  }
+  function requirePinSet(){
+    return !!localStorage.getItem(PIN_KEY);
+  }
+
+  function setPin(){
+    const p = (document.getElementById("newPin").value || "").trim();
+    if(p.length < 4){ toast("PIN لازم على الأقل 4 أرقام"); return; }
+    localStorage.setItem(PIN_KEY, p);
+    toast("تم حفظ PIN ✅");
+  }
+
+  function login(){
+    if(!requirePinSet()){
+      toast("عيّن PIN أولاً من الأسفل ✅");
+      return;
+    }
+    const pin = (document.getElementById("pinInput").value || "").trim();
+    const saved = localStorage.getItem(PIN_KEY);
+    if(pin === saved){
+      localStorage.setItem(SESSION_KEY, "1");
+      initApp();
+      toast("مرحبا 👋");
+    } else {
+      toast("PIN غلط ❌");
+    }
+  }
+
+  function logout(){
+    localStorage.removeItem(SESSION_KEY);
+    document.getElementById("appView").style.display = "none";
+    document.getElementById("loginView").style.display = "block";
+  }
+
+  function money(n){
+    return (Math.round((n + Number.EPSILON) * 100) / 100).toFixed(2);
+  }
+  function uid(){
+    return Math.random().toString(16).slice(2) + Date.now().toString(16);
+  }
+
+  function initApp(){
+    document.getElementById("loginView").style.display = "none";
+    document.getElementById("appView").style.display = "block";
+    showTab("products");
+    renderProducts();
+    fillSellProducts();
+    renderSales();
+    renderProfitToday();
+  }
+
+  function showTab(which){
+    const panes = ["products","sell","profit","backup"];
+    panes.forEach(p=>{
+      document.getElementById(p+"Pane").style.display = (p===which) ? "block" : "none";
+      document.getElementById("tab"+p.charAt(0).toUpperCase()+p.slice(1)).classList.toggle("active", p===which);
+    });
+    if(which==="sell"){ fillSellProducts(); renderSales(); }
+    if(which==="profit"){ renderProfitToday(); }
+  }
+
+  // PRODUCTS
+  function clearProductForm(){
+    ["pName","pStock","pBuy","pSell"].forEach(id=> document.getElementById(id).value="");
+  }
+
+  function addProduct(){
+    const name = (document.getElementById("pName").value || "").trim();
+    const stock = parseInt((document.getElementById("pStock").value || "0").trim(), 10);
+    const buy = parseFloat((document.getElementById("pBuy").value || "0").trim());
+    const sell = parseFloat((document.getElementById("pSell").value || "0").trim());
+
+    if(!name){ toast("اسم المنتج لازم"); return; }
+    if(!Number.isFinite(stock) || stock < 0){ toast("الكمية غير صحيحة"); return; }
+    if(!Number.isFinite(buy) || buy < 0){ toast("سعر الشراء غير صحيح"); return; }
+    if(!Number.isFinite(sell) || sell < 0){ toast("سعر البيع غير صحيح"); return; }
+
+    const data = loadData();
+    data.products.unshift({
+      id: uid(),
+      name,
+      stock,
+      buyPrice: buy,
+      sellPrice: sell,
+      createdAt: Date.now()
+    });
+    saveData(data);
+    clearProductForm();
+    renderProducts();
+    fillSellProducts();
+    toast("تم إضافة المنتج ✅");
+  }
+
+  function updateProduct(id, patch){
+    const data = loadData();
+    const p = data.products.find(x=>x.id===id);
+    if(!p) return;
+    Object.assign(p, patch);
+    saveData(data);
+  }
+
+  function deleteProduct(id){
+    const data = loadData();
+    data.products = data.products.filter(x=>x.id!==id);
+    saveData(data);
+    renderProducts();
+    fillSellProducts();
+    toast("تم حذف المنتج");
+  }
+
+  function renderProducts(){
+    const data = loadData();
+    const q = (document.getElementById("search").value || "").trim().toLowerCase();
+    const sortBy = document.getElementById("sortBy").value;
+
+    let items = data.products.slice();
+    if(q) items = items.filter(p => (p.name||"").toLowerCase().includes(q));
+
+    if(sortBy==="name") items.sort((a,b)=> (a.name||"").localeCompare(b.name||""));
+    else if(sortBy==="stock") items.sort((a,b)=> (a.stock||0) - (b.stock||0));
+    else items.sort((a,b)=> (b.createdAt||0) - (a.createdAt||0));
+
+    const list = document.getElementById("productsList");
+    list.innerHTML = "";
+
+    if(items.length===0){
+      list.innerHTML = `<div class="muted">ماكان حتى منتج… زيد واحد من الفوق 👆</div>`;
+      return;
+    }
+
+    items.forEach(p=>{
+      const el = document.createElement("div");
+      el.className = "item";
+      el.innerHTML = `
+        <h3>${escapeHtml(p.name)}</h3>
+        <div class="meta">
+          <span class="pill">Stock: ${p.stock}</span>
+          <span class="pill">شراء: ${money(p.buyPrice||0)}</span>
+          <span class="pill">بيع افتراضي: ${money(p.sellPrice||0)}</span>
+        </div>
+        <div class="actions">
+          <button class="secondary" onclick="quickEdit('${p.id}')">تعديل</button>
+          <button class="danger" onclick="deleteProduct('${p.id}')">حذف</button>
+        </div>
+        <div id="edit_${p.id}" style="display:none;margin-top:10px" class="card"></div>
+      `;
+      list.appendChild(el);
+    });
+  }
+
+  function quickEdit(id){
+    const data = loadData();
+    const p = data.products.find(x=>x.id===id);
+    if(!p) return;
+    const box = document.getElementById("edit_"+id);
+    const isOpen = box.style.display === "block";
+    box.style.display = isOpen ? "none" : "block";
+    if(isOpen) return;
+
+    box.innerHTML = `
+      <div class="grid2">
+        <div><label>الاسم</label><input id="e_name_${id}" value="${escapeAttr(p.name)}"></div>
+        <div><label>الكمية</label><input id="e_stock_${id}" inputmode="numeric" value="${p.stock}"></div>
+        <div><label>سعر الشراء</label><input id="e_buy_${id}" inputmode="decimal" value="${p.buyPrice||0}"></div>
+        <div><label>سعر البيع الافتراضي</label><input id="e_sell_${id}" inputmode="decimal" value="${p.sellPrice||0}"></div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button onclick="saveEdit('${id}')">حفظ</button>
+        <button class="secondary" onclick="document.getElementById('edit_${id}').style.display='none'">إغلاق</button>
+      </div>
+    `;
+  }
+
+  function saveEdit(id){
+    const name = (document.getElementById("e_name_"+id).value||"").trim();
+    const stock = parseInt((document.getElementById("e_stock_"+id).value||"0").trim(),10);
+    const buy = parseFloat((document.getElementById("e_buy_"+id).value||"0").trim());
+    const sell = parseFloat((document.getElementById("e_sell_"+id).value||"0").trim());
+
+    if(!name){ toast("الاسم لازم"); return; }
+    if(!Number.isFinite(stock) || stock < 0){ toast("الكمية غير صحيحة"); return; }
+    if(!Number.isFinite(buy) || buy < 0){ toast("سعر الشراء غير صحيح"); return; }
+    if(!Number.isFinite(sell) || sell < 0){ toast("سعر البيع غير صحيح"); return; }
+
+    updateProduct(id, { name, stock, buyPrice: buy, sellPrice: sell });
+    renderProducts();
+    fillSellProducts();
+    toast("تم التعديل ✅");
+  }
+
+  function fillSellProducts(){
+    const data = loadData();
+    const sel = document.getElementById("sellProduct");
+    sel.innerHTML = "";
+    data.products.forEach(p=>{
+      const opt = document.createElement("option");
+      opt.value = p.id;
+      opt.textContent = `${p.name} (Stock: ${p.stock})`;
+      sel.appendChild(opt);
+    });
+    prefillSell();
+  }
+
+  function prefillSell(){
+    const data = loadData();
+    const id = document.getElementById("sellProduct").value;
+    const p = data.products.find(x=>x.id===id);
+    if(!p) {
+      document.getElementById("sellPrice").value = "";
+      return;
+    }
+    document.getElementById("sellPrice").value = (p.sellPrice ?? 0);
+  }
+
+  function resetSell(){
+    document.getElementById("sellQty").value = "1";
+    document.getElementById("sellNote").value = "";
+    prefillSell();
+  }
+
+  function confirmSale(){
+    const data = loadData();
+    if(data.products.length===0){ toast("زيد منتجات أولاً"); return; }
+
+    const pid = document.getElementById("sellProduct").value;
+    const p = data.products.find(x=>x.id===pid);
+    if(!p){ toast("منتج غير موجود"); return; }
+
+    const qty = parseInt((document.getElementById("sellQty").value||"0").trim(),10);
+    const unitPrice = parseFloat((document.getElementById("sellPrice").value||"0").trim());
+    const note = (document.getElementById("sellNote").value||"").trim();
+
+    if(!Number.isFinite(qty) || qty <= 0){ toast("الكمية غير صحيحة"); return; }
+    if(!Number.isFinite(unitPrice) || unitPrice <= 0){ toast("السعر غير صحيح"); return; }
+    if(p.stock < qty){ toast(`الستوك ما يكفيش (المتوفر: ${p.stock})`); return; }
+
+    // update stock
+    p.stock -= qty;
+
+    const total = qty * unitPrice;
+    const profit = (unitPrice - (p.buyPrice||0)) * qty;
+
+    data.sales.unshift({
+      id: uid(),
+      productId: p.id,
+      productName: p.name,
+      qty,
+      unitPrice,
+      buyPriceAtSale: (p.buyPrice||0),
+      total,
+      profit,
+      note,
+      createdAt: Date.now()
+    });
+
+    saveData(data);
+    renderProducts();
+    fillSellProducts();
+    renderSales();
+    renderProfitToday();
+    resetSell();
+    toast("تمت عملية البيع ✅");
+  }
+
+  function renderSales(){
+    const data = loadData();
+    const list = document.getElementById("salesList");
+    list.innerHTML = "";
+    if(data.sales.length===0){
+      list.innerHTML = `<div class="muted">ماكان حتى بيع…</div>`;
+      return;
+    }
+    data.sales.slice(0, 30).forEach(s=>{
+      const dt = new Date(s.createdAt);
+      const el = document.createElement("div");
+      el.className = "item";
+      el.innerHTML = `
+        <h3>${escapeHtml(s.productName)} <span class="pill">${dt.toLocaleString('ar-DZ')}</span></h3>
+        <div class="meta">
+          <span class="pill">كمية: ${s.qty}</span>
+          <span class="pill">بيع: ${money(s.unitPrice)}</span>
+          <span class="pill">شراء: ${money(s.buyPriceAtSale)}</span>
+          <span class="pill">الإجمالي: ${money(s.total)}</span>
+          <span class="pill">الربح: ${money(s.profit)}</span>
+        </div>
+        ${s.note ? `<div class="muted small" style="margin-top:8px">ملاحظة: ${escapeHtml(s.note)}</div>` : ""}
+      `;
+      list.appendChild(el);
+    });
+  }
+
+  // PROFIT TODAY
+  function sameDay(a, b){
+    return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
+  }
+
+  function renderProfitToday(){
+    const data = loadData();
+    const now = new Date();
+    document.getElementById("todayDate").textContent = now.toLocaleDateString('ar-DZ');
+
+    const todaySales = data.sales.filter(s => sameDay(new Date(s.createdAt), now));
+    let totalSales = 0, totalProfit = 0;
+    todaySales.forEach(s=>{
+      totalSales += (s.total||0);
+      totalProfit += (s.profit||0);
+    });
+
+    document.getElementById("todaySales").textContent = money(totalSales);
+    document.getElementById("todayProfit").textContent = money(totalProfit);
+    document.getElementById("todayCount").textContent = todaySales.length.toString();
+
+    const list = document.getElementById("todayList");
+    list.innerHTML = "";
+    if(todaySales.length===0){
+      list.innerHTML = `<div class="muted">اليوم ماكانش مبيعات.</div>`;
+      return;
+    }
+
+    todaySales.forEach(s=>{
+      const dt = new Date(s.createdAt);
+      const el = document.createElement("div");
+      el.className = "item";
+      el.innerHTML = `
+        <h3>${escapeHtml(s.productName)} <span class="pill">${dt.toLocaleTimeString('ar-DZ')}</span></h3>
+        <div class="meta">
+          <span class="pill">كمية: ${s.qty}</span>
+          <span class="pill">الإجمالي: ${money(s.total)}</span>
+          <span class="pill">الربح: ${money(s.profit)}</span>
+        </div>
+      `;
+      list.appendChild(el);
+    });
+  }
+
+  // BACKUP
+  function exportData(){
+    const data = loadData();
+    document.getElementById("backupText").value = JSON.stringify(data, null, 2);
+    toast("تم إخراج البيانات ✅");
+  }
+  function copyExport(){
+    const ta = document.getElementById("backupText");
+    ta.select();
+    ta.setSelectionRange(0, 999999);
+    try {
+      document.execCommand("copy");
+      toast("تم النسخ ✅");
+    } catch {
+      toast("ماقدرش ينسخ… انسخ يدويًا");
+    }
+  }
+  function importData(){
+    const raw = document.getElementById("backupText").value || "";
+    if(!raw.trim()){ toast("حط JSON أولاً"); return; }
+    try {
+      const obj = JSON.parse(raw);
+      if(!obj.products || !obj.sales) throw new Error("شكل البيانات غير صحيح");
+      saveData(obj);
+      renderProducts(); fillSellProducts(); renderSales(); renderProfitToday();
+      toast("تم الاستيراد ✅");
+    } catch (e){
+      toast("JSON غير صالح ❌");
+    }
+  }
+  function resetAll(){
+    if(!confirm("أكيد تحذف كل البيانات؟")) return;
+    localStorage.removeItem(LS_KEY);
+    toast("تم حذف البيانات");
+    renderProducts(); fillSellProducts(); renderSales(); renderProfitToday();
+  }
+
+  // helpers
+  function escapeHtml(str){
+    return (str||"").replace(/[&<>"']/g, s => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+    }[s]));
+  }
+  function escapeAttr(str){
+    return escapeHtml(str).replace(/"/g, "&quot;");
+  }
+
+  // boot
+  (function(){
+    if(isLogged()) initApp();
+    else {
+      document.getElementById("loginView").style.display = "block";
+      document.getElementById("appView").style.display = "none";
+    }
+  })();
+</script>
+</body>
+</html>
